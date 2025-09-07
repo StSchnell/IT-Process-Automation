@@ -1,6 +1,6 @@
 # IT Process Automation
 
-IT process automation automates repeatable business processes and workflows to reduce manual tasks and increase efficiency. It is a wider, business-oriented approach that focuses on automating processes across the entire enterprise. Data center automation on the other hand is a specific form of IT automation that is limited to the technical level of the IT infrastructure in the data center. 
+IT process automation automates repeatable workflows and actions to reduce manual tasks and increase efficiency. It is a wider approach that focuses on automating IT processes across the entire enterprise. Data center automation is a specific form of IT automation that is limited to the IT infrastructure in the data center, while IT process automation can also be used outside the data center. 
 
 This repository looks at some developer perspectives of IT process automation with Red Hat Ansible.
 
