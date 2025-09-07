@@ -1,0 +1,86 @@
+---
+
+# Executes a Python script which is embedded in YAML and
+# check if the given port of the given host is open in the firewall.
+#
+# To pass the parameters host and port define in the AAP surveys
+# with the host as type text and the port as type integer.
+# Or execute it with
+# ansible-playbook checkIfPortIsOpen.yml -e in_host=127.0.0.1 -e in_port=443
+#
+# @author Stefan Schnell <mail@stefan-schnell.de>
+
+- name: Executes inline Python script and check if port at host is open
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+
+    in_host: 127.0.0.1
+    in_port: 443
+
+    python_code: |
+      #!/usr/bin/python
+      # -*- coding: utf-8 -*-
+      
+      import socket
+      
+      def main():
+      
+          host: str = "127.0.0.1"
+          port: int = 443
+      
+          try:
+              sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+              result = sock.connect_ex((host, port))
+              if result == 0:
+                  print("Port is open")
+              else:
+                  print("Port is not open")
+          except Exception as err:
+              print("Error:", repr(err))
+          finally:
+              sock.close()
+      
+      if __name__ == "__main__":
+          main()
+
+  tasks:
+
+    - name: Replace host variable
+      ansible.builtin.set_fact:
+        python_code: "{{ python_code | replace(old, new) }}"
+      vars:
+        old: 'host: str = "127.0.0.1"'
+        new: 'host: str = "{{ in_host }}"'
+
+    - name: Replace port variable
+      ansible.builtin.set_fact:
+        python_code: "{{ python_code | replace(old, new) }}"
+      vars:
+        old: "port: int = 443"
+        new: "port: int = {{ in_port }}"
+
+    - name: Create Python script
+      ansible.builtin.copy:
+        content: "{{ python_code }}"
+        dest: /tmp/checkPort.py
+        follow: true
+        mode: "0777"
+
+    - name: Execute Python script
+      ansible.builtin.command:
+        cmd: /usr/bin/python3 /tmp/checkPort.py
+      changed_when: result.rc != 0
+      register: result
+
+    - name: Print result of the Python script
+      ansible.builtin.debug:
+        msg: "{{ result.stdout_lines }}"
+
+    - name: Delete Python script
+      ansible.builtin.file:
+        path: /tmp/checkPort.py
+        state: absent
+
+...
