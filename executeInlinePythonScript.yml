@@ -1,0 +1,54 @@
+---
+
+# Executes a Python script which is embedded in YAML
+#
+# Execute it with
+# ansible-playbook executeInlinePythonScript.yml
+#
+# @author Stefan Schnell <mail@stefan-schnell.de>
+#
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/
+#
+# Important hint: This approach should only be used in exceptional cases.
+
+- name: Executes Inline Python Script
+  hosts: 127.0.0.1
+  gather_facts: false
+
+  vars:
+    # Hint: Consider idempotency
+    python_code: |
+      #!/usr/bin/python
+      # -*- coding: utf-8 -*-
+      
+      def main():
+          print("Hello World")
+      
+      if __name__ == "__main__":
+          main()
+
+  tasks:
+
+    - name: Create Python Script
+      ansible.builtin.copy:
+        content: "{{ python_code }}"
+        dest: /tmp/helloWorld.py
+        follow: true
+        mode: "0777"
+
+    - name: Execute Python Script
+      ansible.builtin.command:
+        cmd: /usr/bin/python3 /tmp/helloWorld.py
+      changed_when: result.rc != 0
+      register: result
+
+    - name: Print Result of the Python Script
+      ansible.builtin.debug:
+        msg: "{{ result.stdout_lines }}"
+
+    - name: Delete Python Script
+      ansible.builtin.file:
+        path: /tmp/helloWorld.py
+        state: absent
+
+...
