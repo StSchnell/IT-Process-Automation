@@ -9,6 +9,8 @@
 # ansible-playbook checkIfPortIsOpen.yml -e in_host=127.0.0.1 -e in_port=443
 #
 # @author Stefan Schnell <mail@stefan-schnell.de>
+# @license MIT
+# @version 0.2.0
 
 - name: Executes inline Python script and check if port at host is open
   hosts: localhost
@@ -16,7 +18,7 @@
 
   vars:
 
-    in_host: 127.0.0.1
+    in_host: "127.0.0.1"
     in_port: 443
 
     python_code: |
@@ -27,8 +29,8 @@
       
       def main():
       
-          host: str = "127.0.0.1"
-          port: int = 443
+          host: str = "{{ in_host }}"
+          port: int = {{ in_port }}
       
           try:
               sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -46,20 +48,6 @@
           main()
 
   tasks:
-
-    - name: Replace host variable
-      ansible.builtin.set_fact:
-        python_code: "{{ python_code | replace(old, new) }}"
-      vars:
-        old: 'host: str = "127.0.0.1"'
-        new: 'host: str = "{{ in_host }}"'
-
-    - name: Replace port variable
-      ansible.builtin.set_fact:
-        python_code: "{{ python_code | replace(old, new) }}"
-      vars:
-        old: "port: int = 443"
-        new: "port: int = {{ in_port }}"
 
     - name: Create Python script
       ansible.builtin.copy:
@@ -82,5 +70,3 @@
       ansible.builtin.file:
         path: /tmp/checkPort.py
         state: absent
-
-...
