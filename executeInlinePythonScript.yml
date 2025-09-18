@@ -50,5 +50,3 @@
       ansible.builtin.file:
         path: /tmp/helloWorld.py
         state: absent
-
-...
