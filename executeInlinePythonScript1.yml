@@ -3,7 +3,7 @@
 # Executes a Python script which is embedded in YAML
 #
 # Execute it with
-# ansible-playbook executeInlinePythonScript.yml
+# ansible-playbook executeInlinePythonScript1.yml
 #
 # @author Stefan Schnell <mail@stefan-schnell.de>
 #
@@ -19,7 +19,6 @@
     # Hint: Consider idempotency
     python_code: |
       #!/usr/bin/python
-      # -*- coding: utf-8 -*-
       
       def main():
           print("Hello World")
