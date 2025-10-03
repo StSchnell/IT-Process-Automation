@@ -1,0 +1,78 @@
+---
+
+# Executes a Python script which is embedded in YAML and runs in-memory
+# with an argument and with an Ansible variable as argument
+#
+# Execute it with
+# ansible-playbook executeInlinePythonScript2.yml
+# ansible-playbook executeInlinePythonScript2.yml -e in_name=Bambi
+#
+# @author Stefan Schnell <mail@stefan-schnell.de>
+#
+# Hint: This approach has the advantage that the Python script can be
+# directly extracted and executed with a Python interpreter without any
+# modifications, instead of using Jinja2 templating (expression) in
+# Python code.
+
+- name: Executes Inline Python Script
+  hosts: 127.0.0.1
+  gather_facts: false
+
+  vars:
+
+    in_name: "Nobody"
+
+    python_code: |
+      import sys
+      
+      def printName(name: str | None = None):
+          if name:
+              print("Hello", name)
+          else:
+              print("Hello World")
+      
+      def main():
+          printName()
+          if len(sys.argv) > 1:
+              printName(sys.argv[1])
+      
+      if __name__ == "__main__":
+          main()
+
+  tasks:
+
+    - name: Main
+      block:
+
+
+        - name: Execute Python Script without an argument
+          ansible.builtin.command:
+            cmd: "/usr/bin/python3 -c '{{ python_code }}'"
+          changed_when: result.rc != 0
+          register: result
+
+        - name: Print Result of the Python Script without an argument
+          ansible.builtin.debug:
+            msg: "{{ result.stdout_lines }}"
+
+
+        - name: Execute Python Script with an argument
+          ansible.builtin.command:
+            cmd: "/usr/bin/python3 -c '{{ python_code }}' 'Stefan'"
+          changed_when: result.rc != 0
+          register: result
+
+        - name: Print Result of the Python Script with an argument
+          ansible.builtin.debug:
+            msg: "{{ result.stdout_lines }}"
+
+
+        - name: Execute Python Script with an Ansible variable as argument
+          ansible.builtin.command:
+            cmd: "/usr/bin/python3 -c '{{ python_code }}' '{{ in_name }}'"
+          changed_when: result.rc != 0
+          register: result
+
+        - name: Print Result of the Python Script with an Ansible variable as argument
+          ansible.builtin.debug:
+            msg: "{{ result.stdout_lines }}"
